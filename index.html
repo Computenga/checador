@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1726">
+<meta name="robots" content="noindex">
+<title>Checador Packatelas</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<main class="marco">
+  <div class="marca">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span id="marca">Checador Packatelas</span>
+  </div>
+
+  <!-- Inicio: listo para poner huella -->
+  <section id="vInicio" class="centro oculto">
+    <div class="reloj" id="reloj">--:--</div>
+    <div class="fecha" id="fecha"></div>
+    <div class="saludo" id="saludo"></div>
+    <div class="huella pulso" style="margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>
+    </div>
+    <div class="sub" id="instruccion"></div>
+    <div id="aviso" class="aviso error oculto"></div>
+  </section>
+
+  <!-- Esperando a la tablet -->
+  <section id="vEspera" class="centro oculto">
+    <div class="spinner" style="width:48px;height:48px;border-width:4px"></div>
+    <div class="saludo" id="esperaTitulo">Enviando…</div>
+    <div class="sub" id="esperaTexto">Mira la tablet.</div>
+  </section>
+
+  <!-- Resultado -->
+  <section id="vResultado" class="centro resultado oculto">
+    <div class="icono-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="tipo" id="rTipo"></div>
+    <div class="nombre" id="rNombre"></div>
+    <div class="hora" id="rHora"></div>
+  </section>
+
+  <!-- Sin internet: mostrar el código a la tablet -->
+  <section id="vCodigo" class="centro oculto">
+    <div class="saludo" id="codigoTitulo">Muestra este código a la tablet</div>
+    <div class="qrcaja" id="qrcaja"></div>
+    <div class="sub" id="codigoTexto">Acerca la pantalla a la cámara de la tablet, a unos 20 cm. Sube el brillo si no lo lee.</div>
+  </section>
+
+  <!-- Error -->
+  <section id="vError" class="centro oculto">
+    <div class="error-grande" id="eTitulo"></div>
+    <div class="sub" id="eTexto"></div>
+  </section>
+
+  <div class="acciones">
+    <button class="boton" id="bAccion" hidden><span class="spinner oculto" id="spin"></span><span id="bTexto"></span></button>
+  </div>
+  <p class="pie" id="pie">Tu huella nunca sale de tu celular.</p>
+</main>
+<script src="qrcode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

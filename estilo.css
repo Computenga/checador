@@ -1,0 +1,69 @@
+:root {
+  --fondo: #0E1726;
+  --panel: #162236;
+  --borde: #24324a;
+  --texto: #FFFFFF;
+  --texto2: #B4C0D3;
+  --acento: #3B82F6;
+  --ok: #22C55E;
+  --salida: #F59E0B;
+  --error: #EF4444;
+  --radio: 20px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--fondo); color: var(--texto); }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+.marco {
+  min-height: 100dvh; max-width: 480px; margin: 0 auto;
+  display: flex; flex-direction: column; padding: 20px 16px 28px;
+}
+.marca { display: flex; align-items: center; gap: 10px; color: var(--texto2); font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+.marca svg { width: 22px; height: 22px; }
+.centro { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px; padding: 24px 0; }
+.reloj { font-size: 54px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.fecha { color: var(--texto2); font-size: 18px; }
+.saludo { font-size: 22px; font-weight: 600; margin-top: 8px; }
+.sub { color: var(--texto2); font-size: 16px; max-width: 34ch; }
+.boton {
+  appearance: none; border: 0; border-radius: var(--radio); width: 100%;
+  min-height: 64px; padding: 16px 20px; font: inherit; font-size: 20px; font-weight: 700;
+  background: var(--acento); color: #fff; display: flex; align-items: center; justify-content: center; gap: 12px;
+  cursor: pointer; transition: transform .08s, opacity .2s;
+}
+.boton:active { transform: scale(.98); }
+.boton[disabled] { opacity: .55; }
+.boton svg { width: 30px; height: 30px; }
+.boton.secundario { background: transparent; border: 2px solid var(--borde); color: var(--texto); font-size: 17px; min-height: 54px; }
+.huella {
+  width: 132px; height: 132px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle, rgba(59,130,246,.22), rgba(59,130,246,.05) 70%);
+  border: 2px solid rgba(59,130,246,.45); color: var(--acento);
+}
+.huella svg { width: 70px; height: 70px; }
+.huella.pulso { animation: pulso 1.6s ease-in-out infinite; }
+@keyframes pulso { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,.35); } 50% { box-shadow: 0 0 0 18px rgba(59,130,246,0); } }
+.resultado .tipo { font-size: 52px; font-weight: 900; letter-spacing: .02em; line-height: 1; }
+.resultado .nombre { font-size: 26px; font-weight: 700; }
+.resultado .hora { font-size: 20px; color: var(--texto2); }
+.icono-ok { width: 110px; height: 110px; border-radius: 50%; display: grid; place-items: center; }
+.icono-ok svg { width: 64px; height: 64px; }
+.entrada .tipo { color: var(--ok); } .entrada .icono-ok { background: rgba(34,197,94,.15); color: var(--ok); }
+.salida .tipo { color: var(--salida); } .salida .icono-ok { background: rgba(245,158,11,.15); color: var(--salida); }
+.aviso { border-radius: 14px; padding: 12px 14px; font-size: 15px; text-align: left; width: 100%; }
+.aviso.error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: #FCA5A5; }
+.aviso.info { background: rgba(59,130,246,.10); border: 1px solid rgba(59,130,246,.35); color: #BFD5FF; }
+.aviso.ambar { background: rgba(245,158,11,.10); border: 1px solid rgba(245,158,11,.4); color: #FCD9A0; }
+.error-grande { color: var(--error); font-size: 26px; font-weight: 800; }
+.acciones { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.pie { color: var(--texto2); font-size: 13px; text-align: center; }
+.oculto, [hidden] { display: none !important; }
+.spinner { width: 28px; height: 28px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: gira .8s linear infinite; }
+@keyframes gira { to { transform: rotate(360deg); } }
+.cuenta { font-variant-numeric: tabular-nums; }
+.qrcaja { background: #fff; border-radius: 18px; padding: 14px; width: min(320px, 86vw); }
+.qrcaja img, .qrcaja svg { width: 100%; height: auto; display: block; }
+.paso { color: var(--texto2); font-size: 15px; }
