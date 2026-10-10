@@ -85,6 +85,8 @@ const b64u = (u8) => Verif.b64u.enc(u8);
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : b64u(crypto.getRandomValues(new Uint8Array(16))));
 
 // ===================== Apps Script =====================
+const SCRIPT_VIEJO = 'Tu Apps Script es una versión anterior. Pega el código nuevo de Checador-AppsScript.gs ' +
+  'y publícalo en Implementar → Administrar implementaciones → lápiz → Versión: "Nueva versión"';
 async function gas(datos) {
   const r = await fetch(cfg.scriptUrl, { method: 'POST', body: JSON.stringify(Object.assign({ token: cfg.token }, datos)) });
   const j = await r.json();
@@ -100,6 +102,7 @@ async function gasGet(params) {
 
 async function sincronizarEmpleados() {
   const j = await gas({ accion: 'empleados' });
+  if (!Array.isArray(j.empleados)) throw new Error(SCRIPT_VIEJO);
   // conserva contadores locales más altos (por si aún no se envían)
   const prev = Object.fromEntries(empleados.filter((e) => e.cred).map((e) => [e.cred.id, e.cred.contador || 0]));
   empleados = j.empleados.map((e) => {
@@ -117,6 +120,7 @@ function renovarDia() {
 async function sincronizarHoy() {
   const f = fechaLocal();
   const j = await gas({ accion: 'hoy', fecha: f });
+  if (!Array.isArray(j.checadas)) throw new Error(SCRIPT_VIEJO);
   const marcas = {};
   const agregar = (num, t, ts) => { (marcas[num] = marcas[num] || []).push({ t, ts }); };
   j.checadas.forEach((c) => {
@@ -630,7 +634,8 @@ $('fCfg').addEventListener('submit', async (e) => {
     aviso(`✓ Conectado. ${empleados.length} empleados en la hoja.`, 'info');
   } catch (err) {
     LS.set('kc_cfg', cfg);
-    aviso('Se guardó, pero no se pudo conectar: ' + err.message + '. Revisa la URL, el token y que el script esté publicado como "Cualquier usuario".', 'error');
+    aviso(err.message === SCRIPT_VIEJO ? 'Se guardó, pero ' + SCRIPT_VIEJO.charAt(0).toLowerCase() + SCRIPT_VIEJO.slice(1) + '.'
+      : 'Se guardó, pero no se pudo conectar: ' + err.message + '. Revisa la URL, el token y que el script esté publicado como "Cualquier usuario".', 'error');
   }
 });
 
