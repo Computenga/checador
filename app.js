@@ -1,5 +1,5 @@
 // Checador Packatelas — página para el celular del repartidor.
-// No necesita servidor: la tablet verifica la huella y Google Apps Script solo pasa los mensajes.
+// No necesita servidor: el kiosco verifica la huella y Google Apps Script solo pasa los mensajes.
 //
 //  Checar:  #k=<kiosco>&c=<reto>&s=<id del Apps Script>
 //  Alta:    #a=1&k=<kiosco>&c=<reto>&s=<id>&u=<no. empleado>&n=<nombre>
@@ -27,7 +27,7 @@ const leer = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null')
 const idAleatorio = () => bufAB64u(crypto.getRandomValues(new Uint8Array(15)));
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const VISTAS = ['vInicio', 'vEspera', 'vResultado', 'vCodigo', 'vError'];
+const VISTAS = ['vInicio', 'vEspera', 'vResultado', 'vError'];
 function ver(v) { VISTAS.forEach((x) => $(x).classList.toggle('oculto', x !== v)); }
 function boton(texto, activo = true, girando = false) {
   const b = $('bAccion');
@@ -41,7 +41,7 @@ function error(titulo, texto) { ver('vError'); $('eTitulo').textContent = titulo
 function mensajeError(e) {
   if (e && e.name === 'NotAllowedError') return ES_ALTA
     ? 'Se canceló el registro. Toca el botón otra vez y pon tu huella.'
-    : 'Se canceló o no se reconoció la huella. Si no has registrado este celular, pide al encargado que lo registre en la tablet.';
+    : 'Se canceló o no se reconoció la huella. Si no has registrado este celular, pide al encargado que lo registre en el checador.';
   if (e && e.name === 'InvalidStateError') return 'Este celular ya estaba registrado.';
   if (e && e.name === 'SecurityError') return 'Abre este enlace en Chrome (Android) o Safari (iPhone), no dentro de otra app.';
   return (e && e.message) || 'Algo salió mal. Intenta de nuevo.';
@@ -54,7 +54,7 @@ function reloj() {
   $('fecha').textContent = f.charAt(0).toUpperCase() + f.slice(1);
 }
 
-// ---------- comunicación con la tablet (vía Apps Script)
+// ---------- comunicación con el kiosco (vía Apps Script)
 async function enviar(tipo, payload) {
   const id = idAleatorio();
   const r = await fetch(RELAY, { method: 'POST', body: JSON.stringify({ accion: 'relay', k: P.k, tipo, id, payload }) });
@@ -76,30 +76,20 @@ async function esperarResultado(id, segundos = 30) {
   return null;
 }
 
-function mostrarCodigo(payload, titulo, texto) {
-  ver('vCodigo');
-  $('codigoTitulo').textContent = titulo;
-  $('codigoTexto').textContent = texto;
-  const qr = qrcode(0, 'L'); qr.addData(payload, 'Byte'); qr.make();
-  $('qrcaja').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
-  boton(null);
-}
-
-// Manda a la tablet; si no hay internet o la tablet no contesta, muestra el código para escanear
+// Manda la huella al checador (vía Apps Script) y espera su respuesta
 async function entregar(tipo, payload, alListo) {
   ver('vEspera'); boton(null);
   $('esperaTitulo').textContent = 'Enviando…';
-  $('esperaTexto').textContent = 'Mira la tablet.';
+  $('esperaTexto').textContent = 'Mira el checador.';
   let id;
   try { id = await enviar(tipo, payload); }
   catch (e) {
-    return mostrarCodigo(payload, 'Sin internet: muestra este código a la tablet',
-      'Acerca la pantalla a la cámara de la tablet, a unos 20 cm. Sube el brillo si no lo lee.');
+    return error('Sin conexión', 'Conéctate al WiFi de la empresa y vuelve a escanear el QR del checador.');
   }
-  $('esperaTitulo').textContent = 'Esperando a la tablet…';
+  $('esperaTitulo').textContent = 'Esperando al checador…';
   const r = await esperarResultado(id);
-  if (!r) return mostrarCodigo(payload, 'La tablet no respondió',
-    'Muestra este código a la cámara de la tablet, a unos 20 cm.');
+  if (!r) return error('El checador no respondió',
+    'Revisa que el checador esté encendido y con internet, y vuelve a escanear su QR. Si sigue igual, avisa al encargado.');
   if (!r.exito) return error('No se pudo', r.mensaje || 'Intenta de nuevo.');
   alListo(r);
 }
@@ -127,8 +117,8 @@ function iniciarChecar() {
     await entregar('checar', payload, (res) => {
       guardar('chk_cred', { id: bufAB64u(cred.rawId), nombre: res.nombre });
       const vr = $('vResultado');
-      vr.classList.remove('entrada', 'salida'); vr.classList.add(res.tipo === 'ENTRADA' ? 'entrada' : 'salida');
-      $('rTipo').textContent = res.tipo; $('rNombre').textContent = res.nombre; $('rHora').textContent = res.hora || '';
+      vr.classList.remove('entrada', 'salida'); vr.classList.add(/^(ENTRADA|REGRESO)/.test(res.tipo) ? 'entrada' : 'salida');
+      $('rTipo').textContent = res.tipo; $('rTipo').style.fontSize = res.tipo.length > 10 ? '38px' : ''; $('rNombre').textContent = res.nombre; $('rHora').textContent = res.hora || '';
       ver('vResultado'); $('pie').textContent = 'Ya puedes cerrar esta página.';
       if (navigator.vibrate) navigator.vibrate(150);
     });
@@ -161,7 +151,7 @@ function iniciarAlta() {
       guardar('chk_cred', { id: bufAB64u(cred.rawId), nombre: res.nombre || nombre });
       const vr = $('vResultado'); vr.classList.add('entrada');
       $('rTipo').textContent = '¡Listo!'; $('rNombre').textContent = res.nombre || nombre;
-      $('rHora').textContent = 'Celular registrado. Para checar, escanea el QR de la tablet y pon tu huella.';
+      $('rHora').textContent = 'Celular registrado. Para checar, escanea el QR del checador y pon tu huella.';
       ver('vResultado'); $('pie').textContent = 'Ya puedes cerrar esta página.';
     });
   };
@@ -172,7 +162,7 @@ function iniciarAlta() {
   reloj(); setInterval(reloj, 1000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   if (!P.k || !P.c || !P.s) {
-    return error('Escanea el QR del checador', 'Abre la cámara de tu celular y apunta al QR que aparece en la tablet de la base.');
+    return error('Escanea el QR del checador', 'Abre la cámara de tu celular y apunta al QR que aparece en el checador de la base.');
   }
   if (!window.PublicKeyCredential || !navigator.credentials) {
     return error('Navegador no compatible', 'Abre este enlace en Chrome (Android) o Safari (iPhone). Si lo abriste desde otra app, usa "Abrir en el navegador".');

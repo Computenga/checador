@@ -1,6 +1,7 @@
 // Guarda la página en el celular para que abra aunque no haya datos.
-const CACHE = 'checador-v1';
-const ARCHIVOS = ['./', 'index.html', 'app.js', 'estilo.css', 'qrcode.js'];
+const CACHE = 'checador-v4';
+const ARCHIVOS = ['./', 'index.html', 'app.js', 'estilo.css', 'qrcode.js',
+  'kiosco.html', 'kiosco.js', 'kiosco.css', 'verif.js', 'kiosco.webmanifest', 'icono-192.png', 'icono-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
