@@ -160,7 +160,7 @@ function iniciarAlta() {
 // ---------- arranque
 (async () => {
   reloj(); setInterval(reloj, 1000);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
   if (!P.k || !P.c || !P.s) {
     return error('Escanea el QR del checador', 'Abre la cámara de tu celular y apunta al QR que aparece en el checador de la base.');
   }

@@ -97,3 +97,5 @@
 .k-dias { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
 .k-dias label { justify-content: center; padding: 8px 4px; }
 .k-emp .mal { color: #FCA5A5; }
+.k-chico.sel { border-color: var(--acento); background: rgba(59,130,246,.22); font-weight: 700; }
+.k-chico.sel::before { content: '✓'; margin-right: 6px; }

@@ -3,7 +3,7 @@
 // que toca y la manda a Google Sheets (las fotos se guardan en Drive desde el Apps Script).
 'use strict';
 
-const VERSION = '2.1';
+const VERSION = '2.3';
 const $ = (id) => document.getElementById(id);
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -186,6 +186,7 @@ function pintarPie() {
   if (porEnviar) partes.push(`${porEnviar} por enviar`);
   if (conectado === false) partes.push('<span class="mal">⚠ el checador no tiene internet</span>');
   if (!camaraOk) partes.push('<span class="mal">⚠ sin cámara: no se tomarán fotos</span>');
+  partes.push('v' + VERSION);
   $('pie').innerHTML = partes.join(' · ');
 }
 
@@ -562,15 +563,31 @@ function diasDe(texto) {
 $('eDias').innerHTML = DIAS.map(([d, n]) => `<label><input type="checkbox" value="${d}"> ${n}</label>`).join('');
 $('eDiasAtajos').addEventListener('click', (ev) => {
   const b = ev.target.closest('button[data-d]'); if (!b) return;
+  ev.preventDefault();
   const l = b.dataset.d.split(',');
   $('eDias').querySelectorAll('input').forEach((i) => (i.checked = l.includes(i.value)));
+  marcarAtajos();
 });
+/** Resalta el atajo que coincide con lo marcado (días y tipo de puesto). */
+function marcarAtajos() {
+  const dias = [...$('eDias').querySelectorAll('input:checked')].map((i) => i.value).join(',');
+  $('eDiasAtajos').querySelectorAll('button').forEach((b) => b.classList.toggle('sel', b.dataset.d === dias));
+  const tipos = ordenar([...$('eTipos').querySelectorAll('input:checked')].map((i) => i.value)).join(',');
+  $('ePerfiles').querySelectorAll('button').forEach((b) => {
+    const p = PERFILES.find(([n]) => n === b.dataset.p);
+    b.classList.toggle('sel', p && p[1].join(',') === tipos);
+  });
+}
+$('eDias').addEventListener('change', marcarAtajos);
+$('eTipos').addEventListener('change', marcarAtajos);
 $('ePerfiles').innerHTML = PERFILES.map(([n]) => `<button type="button" class="k-chico" data-p="${n}">${n}</button>`).join('');
 $('eTipos').innerHTML = TIPOS.map((t) => `<label><input type="checkbox" value="${t.c}"> ${esc(t.corta)}</label>`).join('');
 $('ePerfiles').addEventListener('click', (ev) => {
   const b = ev.target.closest('button[data-p]'); if (!b) return;
+  ev.preventDefault();
   const tipos = PERFILES.find(([n]) => n === b.dataset.p)[1];
   $('eTipos').querySelectorAll('input').forEach((i) => (i.checked = tipos.includes(i.value)));
+  marcarAtajos();
 });
 function abrirEmpleado(e) {
   editando = e || null;
@@ -583,6 +600,7 @@ function abrirEmpleado(e) {
   const dias = e && e.dias ? diasDe(e.dias) : ['L', 'M', 'Mi', 'J', 'V', 'S'];
   $('eDias').querySelectorAll('input').forEach((i) => (i.checked = dias.includes(i.value)));
   $('eComida').value = e && e.comida !== '' && e.comida != null ? e.comida : 60;
+  marcarAtajos();
   $('eGuardarCel').textContent = e && e.cred ? 'Guardar' : 'Guardar y registrar celular';
   $('eMsg').classList.add('oculto');
   $('vEmp').classList.remove('oculto');
@@ -702,13 +720,29 @@ document.addEventListener('visibilitychange', () => {
 });
 setInterval(() => { if (!document.hidden && !camaraViva()) iniciarCamara(); }, 30000);
 
+// ===================== Actualizaciones automáticas =====================
+// Cuando se suben archivos nuevos a GitHub, el kiosco se recarga solo (cuando nadie está checando).
+let hayVersionNueva = false;
+function iniciarActualizaciones() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+    setInterval(() => reg.update().catch(() => {}), 10 * 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => {});
+  const habia = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (habia) hayVersionNueva = true; });
+  setInterval(() => {
+    if (hayVersionNueva && panelLibre() && !cola.length && !enviando) location.reload();
+  }, 5000);
+}
+
 // ===================== Arranque =====================
 (async () => {
   reloj(); setInterval(reloj, 1000);
   refrescarQr(); setInterval(refrescarQr, 250);
   pintarPie();
   mantenerEncendida();
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  iniciarActualizaciones();
   iniciarCamara();
   if (!configCompleta()) { abrirAdmin('tCfg'); }
   else {
