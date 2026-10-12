@@ -1,5 +1,5 @@
 // Guarda la página en el celular para que abra aunque no haya datos.
-const CACHE = 'checador-v4';
+const CACHE = 'checador-v5';
 const ARCHIVOS = ['./', 'index.html', 'app.js', 'estilo.css', 'qrcode.js',
   'kiosco.html', 'kiosco.js', 'kiosco.css', 'verif.js', 'kiosco.webmanifest', 'icono-192.png', 'icono-512.png'];
 

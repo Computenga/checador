@@ -120,6 +120,14 @@
     <div class="k-sub">Checadas que le tocan</div>
     <div class="k-fila-btn" id="ePerfiles"></div>
     <div id="eTipos" class="k-checks"></div>
+    <div class="k-sub">Horario (para retrasos y faltas)</div>
+    <label>Hora de entrada<input id="eHora" type="time" required></label>
+    <div class="k-fila-btn" id="eDiasAtajos">
+      <button type="button" class="k-chico" data-d="L,M,Mi,J,V">Lunes a viernes</button>
+      <button type="button" class="k-chico" data-d="L,M,Mi,J,V,S">Lunes a sábado</button>
+    </div>
+    <div id="eDias" class="k-checks k-dias"></div>
+    <label>Minutos de comida permitidos<input id="eComida" type="number" min="0" max="240" step="5" inputmode="numeric"></label>
     <div id="eMsg" class="aviso error oculto"></div>
     <div class="k-fila-btn">
       <button class="k-chico pri" type="submit" id="eGuardarCel">Guardar y registrar celular</button>

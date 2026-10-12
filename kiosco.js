@@ -3,7 +3,7 @@
 // que toca y la manda a Google Sheets (las fotos se guardan en Drive desde el Apps Script).
 'use strict';
 
-const VERSION = '2.0';
+const VERSION = '2.1';
 const $ = (id) => document.getElementById(id);
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -519,6 +519,7 @@ function pintarEmpleados() {
         <div class="n">${esc(e.nombre)} <span class="s">#${esc(e.numero)}</span>
           ${e.cred ? '<span class="pill si">Celular registrado</span>' : '<span class="pill no">Sin celular</span>'}</div>
         <div class="s">Checa: ${esc(nombrePerfil(e.checadas))}</div>
+        <div class="s">${e.horaEntrada ? 'Entra ' + esc(e.horaEntrada) : '<span class="mal">Sin hora de entrada</span>'} · ${esc(e.dias || 'días sin capturar')} · comida ${esc(e.comida || 60)} min</div>
       </div>
       <div class="k-fila-btn">
         <button class="k-chico ${e.cred ? '' : 'pri'}" data-a="cel">${e.cred ? 'Cambiar celular' : 'Registrar celular'}</button>
@@ -549,6 +550,21 @@ $('bRecargar').addEventListener('click', () => sincronizarEmpleados().then(() =>
 
 // ---- Diálogo de empleado
 let editando = null;
+const DIAS = [['L', 'Lun'], ['M', 'Mar'], ['Mi', 'Mié'], ['J', 'Jue'], ['V', 'Vie'], ['S', 'Sáb'], ['D', 'Dom']];
+/** "L,M,Mi,J,V", "L-V", "L-S" -> ['L','M',...] */
+function diasDe(texto) {
+  const s = String(texto || '').replace(/\s+/g, '').toUpperCase();
+  if (/^L-V$|^LUNESAVIERNES$/.test(s)) return ['L', 'M', 'Mi', 'J', 'V'];
+  if (/^L-S$|^LUNESASABADO$|^LUNESASÁBADO$/.test(s)) return ['L', 'M', 'Mi', 'J', 'V', 'S'];
+  const ok = DIAS.map(([d]) => d.toUpperCase());
+  return s.split(/[,;\/]+/).filter((x) => ok.includes(x)).map((x) => DIAS[ok.indexOf(x)][0]);
+}
+$('eDias').innerHTML = DIAS.map(([d, n]) => `<label><input type="checkbox" value="${d}"> ${n}</label>`).join('');
+$('eDiasAtajos').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-d]'); if (!b) return;
+  const l = b.dataset.d.split(',');
+  $('eDias').querySelectorAll('input').forEach((i) => (i.checked = l.includes(i.value)));
+});
 $('ePerfiles').innerHTML = PERFILES.map(([n]) => `<button type="button" class="k-chico" data-p="${n}">${n}</button>`).join('');
 $('eTipos').innerHTML = TIPOS.map((t) => `<label><input type="checkbox" value="${t.c}"> ${esc(t.corta)}</label>`).join('');
 $('ePerfiles').addEventListener('click', (ev) => {
@@ -562,6 +578,11 @@ function abrirEmpleado(e) {
   $('eNum').value = e ? e.numero : ''; $('eNom').value = e ? e.nombre : '';
   const tipos = e ? e.checadas : ORDEN;
   $('eTipos').querySelectorAll('input').forEach((i) => (i.checked = tipos.includes(i.value)));
+  const h = (e && e.horaEntrada || '').match(/^(\d{1,2}):(\d{2})/);
+  $('eHora').value = h ? h[1].padStart(2, '0') + ':' + h[2] : '';
+  const dias = e && e.dias ? diasDe(e.dias) : ['L', 'M', 'Mi', 'J', 'V', 'S'];
+  $('eDias').querySelectorAll('input').forEach((i) => (i.checked = dias.includes(i.value)));
+  $('eComida').value = e && e.comida !== '' && e.comida != null ? e.comida : 60;
   $('eGuardarCel').textContent = e && e.cred ? 'Guardar' : 'Guardar y registrar celular';
   $('eMsg').classList.add('oculto');
   $('vEmp').classList.remove('oculto');
@@ -573,10 +594,15 @@ async function guardarEmpleado(conCelular) {
     accion: 'guardarEmpleado', numero: $('eNum').value.trim(), nombre: $('eNom').value.trim(),
     numeroAnterior: editando ? editando.numero : undefined,
     checadas: [...$('eTipos').querySelectorAll('input:checked')].map((i) => i.value),
+    horaEntrada: $('eHora').value.replace(/^0(\d):/, '$1:'),
+    dias: [...$('eDias').querySelectorAll('input:checked')].map((i) => i.value).join(','),
+    comida: $('eComida').value === '' ? 60 : Number($('eComida').value),
   };
   const msg = (t) => { $('eMsg').textContent = t; $('eMsg').classList.remove('oculto'); };
   if (!datos.numero || !datos.nombre) return msg('Número y nombre son obligatorios.');
   if (!datos.checadas.length) return msg('Marca al menos una checada.');
+  if (!datos.horaEntrada) return msg('Pon la hora de entrada (se usa para calcular retrasos).');
+  if (!datos.dias) return msg('Marca los días que trabaja (los demás no cuentan como falta).');
   if (!editando && empleados.some((x) => x.numero === datos.numero)) return msg('Ya existe el número ' + datos.numero + '.');
   try {
     empleados = (await gas(datos)).empleados; LS.set('kc_emp', empleados);
