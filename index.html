@@ -1,7 +1,29 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
-<title>Checador Packatelas</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0E1726;color:#E2E8F0;font:18px/1.5 system-ui,sans-serif;text-align:center;padding:16px}h1{font-size:24px}</style>
-</head><body><main><h1>Este checador ya no está en uso</h1><p>Ahora se checa con la huella en el checador de la base.</p></main>
-<script>if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()));if(window.caches)caches.keys().then(k=>k.forEach(n=>caches.delete(n)));</script>
-</body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El checador se mudó · Packatelas</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: #f8fafc; font-family: system-ui, sans-serif; color: #0f172a; padding: 16px; box-sizing: border-box; }
+    main { max-width: 380px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; text-align: center; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    p { color: #475569; font-size: 15px; line-height: 1.45; margin: 0 0 12px; }
+    a.btn { display: block; background: #0f1e4a; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: 600; margin-top: 8px; }
+    a.sec { display: block; color: #0f1e4a; margin-top: 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>El checador ahora está en el portal de Packatelas</h1>
+    <p>Las checadas ahora se registran solo en el reloj y las ves en el portal nuevo. Todo quedó en un solo acceso: <strong>portal.packatelas.mx</strong>.</p>
+    <p>¿Primera vez? Activa tu cuenta con tu RFC y tu número de empleado.</p>
+    <a class="btn" href="https://portal.packatelas.mx/acceso/empleado">Activar mi cuenta</a>
+    <a class="sec" href="https://portal.packatelas.mx/login">Ya tengo cuenta: entrar</a>
+  </main>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  </script>
+</body>
+</html>
